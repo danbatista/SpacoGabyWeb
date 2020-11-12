@@ -10,13 +10,18 @@ import {
 } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import pt from 'date-fns/locale/pt';
-import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import {
+  MdChevronLeft,
+  MdChevronRight,
+  MdCancel,
+  MdCheck,
+} from 'react-icons/md';
 import { isEqual, parseISO } from 'date-fns/esm';
 import api from '~/services/api';
 
 import { Container, Time } from './styles';
 
-const range = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+const range = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 export default function Dashboard() {
   const [schedules, setSchedules] = useState([]);
@@ -60,6 +65,18 @@ export default function Dashboard() {
     setDate(addDays(date, 1));
   }
 
+  async function handleConfirmation(param) {
+    const data = { id: param.appointment.id, confirmed: true };
+    await api.put('appointments', data);
+    window.location.reload(true);
+  }
+
+  async function handleCancelation(param) {
+    const data = { id: param.appointment.id, confirmed: false };
+    await api.put('appointments', data);
+    window.location.reload(true);
+  }
+
   return (
     <Container>
       <header>
@@ -85,6 +102,21 @@ export default function Dashboard() {
                 ? schedule.appointment.user.name
                 : 'Em Aberto'}
             </span>
+            {schedule.appointment && !schedule.appointment.confirmed ? (
+              <button
+                type="button"
+                onClick={() => handleConfirmation(schedule)}
+              >
+                <MdCheck size={20} color="#f17b9e" />
+                Confirmar
+              </button>
+            ) : null}
+            {schedule.appointment && schedule.appointment.confirmed ? (
+              <button type="button" onClick={() => handleCancelation(schedule)}>
+                <MdCancel size={20} color="#f17b9e" />
+                Cancelar
+              </button>
+            ) : null}
           </Time>
         ))}
       </ul>
